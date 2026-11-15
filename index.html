@@ -1,0 +1,2180 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Similarity Quest — Petualangan Kesebangunan Bangun Datar</title>
+    <meta
+      name="description"
+      content="Media pembelajaran matematika interaktif berbasis gamifikasi tentang kesebangunan bangun datar: eksplorasi ruang kelas, laboratorium penggaris virtual, perbandingan sisi, klasifikasi bangun, kuis, dan sertifikat."
+    />
+    <meta property="og:title" content="The Similarity Quest — Petualangan Kesebangunan Bangun Datar" />
+    <meta
+      property="og:description"
+      content="Media pembelajaran matematika interaktif berbasis gamifikasi tentang kesebangunan bangun datar."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Fonts: Bricolage Grotesque (Display), Plus Jakarta Sans (Body), JetBrains Mono (Math/Tabular) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['"Bricolage Grotesque"', 'sans-serif'],
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root {
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      body {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .font-display {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        text-wrap: balance;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .blueprint-grid {
+        background-color: #f8fafc;
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 22px 22px;
+      }
+
+      .stage-panel {
+        animation: panelEnter 240ms var(--ease-out-expo);
+      }
+
+      @keyframes panelEnter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .stage-panel {
+          animation: none;
+        }
+        * {
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      /* Interactive Classroom Object States */
+      .room-object {
+        cursor: pointer;
+        transition: transform 180ms var(--ease-out-expo), filter 180ms var(--ease-out-expo);
+      }
+      .room-object:hover {
+        filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.22));
+      }
+      .room-object:focus-visible {
+        outline: 3px solid #4f46e5;
+        outline-offset: 4px;
+      }
+      .room-object.is-found {
+        filter: drop-shadow(0 4px 10px rgba(5, 150, 105, 0.28));
+      }
+
+      /* Drag & Drop Zones */
+      .drop-zone-active {
+        border-color: #4f46e5 !important;
+        background-color: #eef2ff !important;
+      }
+
+      /* Certificate subtle geometric pattern */
+      .cert-border-pattern {
+        background-image: linear-gradient(135deg, #4f46e5 0%, #059669 52%, #d97706 100%);
+      }
+
+      @media print {
+        header,
+        .no-print {
+          display: none !important;
+        }
+        body {
+          background: #ffffff !important;
+        }
+        #certificate-card {
+          box-shadow: none !important;
+          border: 2px solid #cbd5e1 !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen flex flex-col blueprint-grid text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <!-- Persistent Top Header & Progress Bar (Hidden on Welcome Screen, shown in Misi 1 - Sertifikat) -->
+    <header
+      id="quest-header"
+      class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200"
+    >
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0"
+              aria-hidden="true"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="5" width="8" height="12" rx="1.5" />
+                <rect x="13" y="9" width="8" height="10" rx="1.5" />
+              </svg>
+            </div>
+            <span class="font-display font-bold text-base sm:text-lg text-slate-900 whitespace-nowrap truncate">
+              The Similarity Quest
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3 text-xs sm:text-sm text-slate-600 shrink-0">
+            <span class="hidden sm:inline">Penjelajah:</span>
+            <span id="header-student-name" class="font-semibold text-indigo-700 truncate max-w-[140px]">Siswa</span>
+            <span class="text-slate-300" aria-hidden="true">·</span>
+            <span id="header-step-label" class="font-medium text-slate-700 whitespace-nowrap">Misi 1 dari 7</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="flex items-center gap-3">
+          <div
+            class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/70"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="progress-bar-container"
+          >
+            <div
+              id="progress-bar-fill"
+              class="h-full bg-gradient-to-r from-indigo-600 via-emerald-500 to-amber-500 rounded-full transition-all duration-300 ease-out"
+              style="width: 14%"
+            ></div>
+          </div>
+          <span
+            id="progress-percent-text"
+            class="font-mono text-xs font-semibold text-slate-600 tabular-nums w-10 text-right shrink-0"
+          >
+            14%
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col justify-center">
+      <!-- ========================================================= -->
+      <!-- SECTION 0: WELCOME SCREEN                                 -->
+      <!-- ========================================================= -->
+      <section id="section-welcome" class="stage-panel">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 items-stretch">
+            <!-- Left Column: Story, Title & Student Name Input -->
+            <div class="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between gap-8">
+              <div class="space-y-4">
+                <p class="text-xs sm:text-sm font-medium text-indigo-600">
+                  Matematika SMP · Kesebangunan Bangun Datar
+                </p>
+                <h1 class="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                  The Similarity Quest
+                </h1>
+                <p class="text-slate-600 text-base sm:text-lg leading-relaxed max-w-xl">
+                  Pecahkan teka-teki ukuran, kuasai penggaris laboratorium, dan temukan rahasia dua bangun yang sebangun bersama pemandu petualanganmu.
+                </p>
+              </div>
+
+              <!-- Mission Route Summary (Unboxed clean list) -->
+              <div class="border-t border-b border-slate-200 py-4 grid grid-cols-3 gap-4 text-left">
+                <div>
+                  <div class="font-mono text-lg font-bold text-indigo-600 tabular-nums">5 Misi</div>
+                  <div class="text-xs text-slate-500">Eksplorasi &amp; Lab</div>
+                </div>
+                <div>
+                  <div class="font-mono text-lg font-bold text-emerald-600 tabular-nums">5 Soal</div>
+                  <div class="text-xs text-slate-500">Evaluasi Akhir</div>
+                </div>
+                <div>
+                  <div class="font-mono text-lg font-bold text-amber-600 tabular-nums">1 Sertifikat</div>
+                  <div class="text-xs text-slate-500">Kelulusan Misi</div>
+                </div>
+              </div>
+
+              <!-- Student Name Form -->
+              <form id="welcome-form" class="space-y-4" novalidate>
+                <div>
+                  <label for="student-name-input" class="block text-sm font-semibold text-slate-800 mb-2">
+                    Nama Lengkap Penjelajah
+                  </label>
+                  <div class="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="text"
+                      id="student-name-input"
+                      name="studentName"
+                      autocomplete="name"
+                      placeholder="Ketik namamu di sini (contoh: Aulia)"
+                      required
+                      maxlength="40"
+                      class="flex-1 min-h-[48px] px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-colors"
+                    />
+                    <button
+                      type="submit"
+                      class="min-h-[48px] px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm sm:text-base whitespace-nowrap shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 flex items-center justify-center gap-2"
+                    >
+                      <span>Mulai Petualangan</span>
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p id="welcome-error" class="hidden mt-2 text-sm text-rose-600 font-medium flex items-center gap-1.5">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path stroke-linecap="round" d="M12 8v4m0 4h.01" />
+                    </svg>
+                    <span>Silakan isi nama kamu terlebih dahulu sebelum memulai petualangan.</span>
+                  </p>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Column: Adventure Guides (Rara & Bima) -->
+            <div class="lg:col-span-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-6 sm:p-8 flex flex-col justify-center gap-5">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Pemandu Petualanganmu
+              </div>
+
+              <!-- Guide 1: Rara -->
+              <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-4">
+                <div class="w-16 h-16 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0" aria-hidden="true">
+                  <!-- Rara SVG Avatar -->
+                  <svg viewBox="0 0 64 64" class="w-14 h-14">
+                    <circle cx="32" cy="34" r="18" fill="#FDE68A" />
+                    <path d="M14 31c0-11 8-19 18-19s18 8 18 19c-3-5-8-7-18-7s-15 2-18 7z" fill="#312E81" />
+                    <path d="M12 32c0 8 2 14 5 16l2-14-7-2zM52 32c0 8-2 14-5 16l-2-14 7-2z" fill="#312E81" />
+                    <circle cx="25" cy="34" r="4.5" fill="none" stroke="#1E1B4B" stroke-width="2" />
+                    <circle cx="39" cy="34" r="4.5" fill="none" stroke="#1E1B4B" stroke-width="2" />
+                    <line x1="29.5" y1="34" x2="34.5" y2="34" stroke="#1E1B4B" stroke-width="2" />
+                    <circle cx="25" cy="34" r="1.5" fill="#1E1B4B" />
+                    <circle cx="39" cy="34" r="1.5" fill="#1E1B4B" />
+                    <path d="M27 42c2.5 2.5 7.5 2.5 10 0" fill="none" stroke="#92400E" stroke-width="2" stroke-linecap="round" />
+                    <path d="M18 58c2-7 8-10 14-10s12 3 14 10" fill="#4F46E5" />
+                  </svg>
+                </div>
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <h2 class="font-display font-bold text-slate-900">Rara</h2>
+                    <span class="text-xs text-indigo-600 font-medium">· Analis Geometri</span>
+                  </div>
+                  <p class="text-sm text-slate-600 leading-snug">
+                    "Halo! Aku Rara. Aku akan membantumu membandingkan rasio sisi dan sudut bangun datar dengan teliti."
+                  </p>
+                </div>
+              </div>
+
+              <!-- Guide 2: Bima -->
+              <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-4">
+                <div class="w-16 h-16 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0" aria-hidden="true">
+                  <!-- Bima SVG Avatar -->
+                  <svg viewBox="0 0 64 64" class="w-14 h-14">
+                    <circle cx="32" cy="34" r="18" fill="#FDBA74" />
+                    <path d="M14 30c1-11 9-18 18-18 10 0 17 7 18 18-4-4-10-6-18-6-7 0-14 2-18 6z" fill="#0F172A" />
+                    <path d="M22 14l5 5 5-6 6 5 4-4" fill="none" stroke="#0F172A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="25" cy="34" r="2" fill="#0F172A" />
+                    <circle cx="39" cy="34" r="2" fill="#0F172A" />
+                    <path d="M26 42c3 3 9 3 12 0" fill="none" stroke="#7C2D12" stroke-width="2.2" stroke-linecap="round" />
+                    <path d="M18 58c2-7 8-10 14-10s12 3 14 10" fill="#059669" />
+                    <rect x="44" y="45" width="6" height="12" rx="1" fill="#FBBF24" transform="rotate(15 44 45)" />
+                  </svg>
+                </div>
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <h2 class="font-display font-bold text-slate-900">Bima</h2>
+                    <span class="text-xs text-emerald-700 font-medium">· Penjelajah Lapangan</span>
+                  </div>
+                  <p class="text-sm text-slate-600 leading-snug">
+                    "Siap beraksi? Aku Bima! Kita akan mengukur benda nyata di ruang kelas dan menaklukkan tantangan lab."
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 1: MISI 1 - EKSPLORASI RUANGAN (PENCARIAN BENDA)  -->
+      <!-- ========================================================= -->
+      <section id="section-misi1" class="hidden stage-panel space-y-6">
+        <!-- Greeting & Mission Header -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div class="space-y-1">
+            <p class="text-sm font-semibold text-indigo-600">
+              Halo, <span class="js-student-name">Penjelajah</span>! · Misi 1: Eksplorasi Ruangan
+            </p>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+              Temukan 5 Benda Segi Empat di Ruang Kelas
+            </h2>
+          </div>
+          <div class="text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex items-center gap-2 self-start sm:self-auto">
+            <span>Progres Pencarian:</span>
+            <span id="m1-counter" class="font-mono font-bold text-indigo-600 tabular-nums">0/5</span>
+          </div>
+        </div>
+
+        <!-- Two-Zone Classroom Interactive Stage -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Left: Classroom Interactive SVG Canvas -->
+          <div class="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between gap-2 text-xs sm:text-sm text-slate-500">
+              <span>Klik atau ketuk 5 benda berbentuk segi empat di dalam gambar ruang kelas.</span>
+            </div>
+
+            <div class="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-amber-50/40">
+              <svg
+                viewBox="0 0 800 480"
+                class="w-full h-auto block select-none"
+                role="img"
+                aria-label="Ilustrasi Ruang Kelas Interaktif dengan 5 benda segi empat"
+              >
+                <!-- Classroom Wall & Floor Background -->
+                <rect x="0" y="0" width="800" height="340" fill="#F1F5F9" />
+                <rect x="0" y="340" width="800" height="140" fill="#FDE68A" fill-opacity="0.45" />
+                <line x1="0" y1="340" x2="800" y2="340" stroke="#CBD5E1" stroke-width="3" />
+                <!-- Floor planks -->
+                <line x1="160" y1="340" x2="100" y2="480" stroke="#E2E8F0" stroke-width="1.5" />
+                <line x1="400" y1="340" x2="400" y2="480" stroke="#E2E8F0" stroke-width="1.5" />
+                <line x1="640" y1="340" x2="700" y2="480" stroke="#E2E8F0" stroke-width="1.5" />
+
+                <!-- Decorative Clock (Not a rectangle!) -->
+                <circle cx="400" cy="48" r="24" fill="#FFFFFF" stroke="#94A3B8" stroke-width="3" />
+                <line x1="400" y1="48" x2="400" y2="34" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
+                <line x1="400" y1="48" x2="412" y2="48" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" />
+
+                <!-- 1. JENDELA (Left Wall) -->
+                <g
+                  id="obj-jendela"
+                  class="room-object"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Jendela Ruang Kelas"
+                  onclick="foundRoomObject('jendela')"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();foundRoomObject('jendela');}"
+                >
+                  <rect x="44" y="74" width="136" height="162" rx="4" fill="#E0F2FE" stroke="#475569" stroke-width="6" />
+                  <line x1="112" y1="74" x2="112" y2="236" stroke="#475569" stroke-width="4" />
+                  <line x1="44" y1="155" x2="180" y2="155" stroke="#475569" stroke-width="4" />
+                  <!-- Sky reflections -->
+                  <path d="M58 95l22-12m-22 26l34-18" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+                  <rect class="found-ring hidden" x="39" y="69" width="146" height="172" rx="6" fill="none" stroke="#059669" stroke-width="4" stroke-dasharray="6 4" />
+                  <g class="found-badge hidden" transform="translate(154, 62)">
+                    <circle cx="14" cy="14" r="14" fill="#059669" />
+                    <path d="M8 14l4 4 8-8" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+                </g>
+
+                <!-- 2. PAPAN TULIS (Center Wall) -->
+                <g
+                  id="obj-papan"
+                  class="room-object"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Papan Tulis"
+                  onclick="foundRoomObject('papan')"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();foundRoomObject('papan');}"
+                >
+                  <rect x="234" y="88" width="332" height="156" rx="4" fill="#065F46" stroke="#92400E" stroke-width="8" />
+                  <!-- Chalk math sketch -->
+                  <rect x="272" y="124" width="44" height="30" fill="none" stroke="#A7F3D0" stroke-width="2" />
+                  <rect x="342" y="114" width="66" height="45" fill="none" stroke="#A7F3D0" stroke-width="2" />
+                  <text x="438" y="142" fill="#ECFDF5" font-size="16" font-family="Plus Jakarta Sans, sans-serif" font-weight="600">A ~ B</text>
+                  <line x1="268" y1="196" x2="520" y2="196" stroke="#A7F3D0" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+                  <!-- Chalk tray -->
+                  <rect x="228" y="244" width="344" height="10" rx="2" fill="#78350F" />
+                  <rect class="found-ring hidden" x="226" y="80" width="348" height="176" rx="6" fill="none" stroke="#059669" stroke-width="4" stroke-dasharray="6 4" />
+                  <g class="found-badge hidden" transform="translate(546, 74)">
+                    <circle cx="14" cy="14" r="14" fill="#059669" />
+                    <path d="M8 14l4 4 8-8" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+                </g>
+
+                <!-- 3. FOTO DI DINDING (Between window & board / right side upper) -->
+                <g
+                  id="obj-foto"
+                  class="room-object"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Foto di Dinding"
+                  onclick="foundRoomObject('foto')"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();foundRoomObject('foto');}"
+                >
+                  <rect x="614" y="70" width="90" height="66" rx="3" fill="#FFFFFF" stroke="#4F46E5" stroke-width="5" />
+                  <!-- Mountain landscape inside photo -->
+                  <rect x="622" y="78" width="74" height="50" fill="#E0E7FF" />
+                  <polygon points="622,128 648,96 672,128" fill="#6366F1" />
+                  <polygon points="652,128 674,104 696,128" fill="#4338CA" />
+                  <circle cx="678" cy="90" r="6" fill="#FBBF24" />
+                  <rect class="found-ring hidden" x="608" y="64" width="102" height="78" rx="6" fill="none" stroke="#059669" stroke-width="4" stroke-dasharray="6 4" />
+                  <g class="found-badge hidden" transform="translate(684, 58)">
+                    <circle cx="14" cy="14" r="14" fill="#059669" />
+                    <path d="M8 14l4 4 8-8" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+                </g>
+
+                <!-- 4. BINGKAI LUKISAN (Right Wall Lower) -->
+                <g
+                  id="obj-lukisan"
+                  class="room-object"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Bingkai Lukisan"
+                  onclick="foundRoomObject('lukisan')"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();foundRoomObject('lukisan');}"
+                >
+                  <rect x="622" y="164" width="132" height="92" rx="3" fill="#FFFBEB" stroke="#D97706" stroke-width="6" />
+                  <!-- Abstract Geometric Art -->
+                  <rect x="636" y="178" width="44" height="64" fill="#FEF3C7" />
+                  <circle cx="698" cy="204" r="20" fill="#F59E0B" fill-opacity="0.85" />
+                  <rect x="646" y="192" width="34" height="36" fill="#059669" fill-opacity="0.8" />
+                  <rect class="found-ring hidden" x="616" y="158" width="144" height="104" rx="6" fill="none" stroke="#059669" stroke-width="4" stroke-dasharray="6 4" />
+                  <g class="found-badge hidden" transform="translate(734, 152)">
+                    <circle cx="14" cy="14" r="14" fill="#059669" />
+                    <path d="M8 14l4 4 8-8" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+                </g>
+
+                <!-- Classroom Desk (Non-target structural prop) -->
+                <g>
+                  <rect x="210" y="346" width="230" height="18" rx="3" fill="#B45309" />
+                  <rect x="226" y="364" width="14" height="92" fill="#78350F" />
+                  <rect x="410" y="364" width="14" height="92" fill="#78350F" />
+                  <rect x="240" y="364" width="170" height="28" fill="#D97706" opacity="0.6" />
+                </g>
+
+                <!-- 5. BUKU DI MEJA (On top of the desk) -->
+                <g
+                  id="obj-buku"
+                  class="room-object"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Buku di Meja"
+                  onclick="foundRoomObject('buku')"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();foundRoomObject('buku');}"
+                >
+                  <!-- Book cover rectangular view -->
+                  <rect x="278" y="302" width="96" height="44" rx="3" fill="#4F46E5" stroke="#1E1B4B" stroke-width="2.5" />
+                  <rect x="284" y="308" width="84" height="24" rx="1.5" fill="#EEF2FF" />
+                  <line x1="294" y1="316" x2="348" y2="316" stroke="#4F46E5" stroke-width="2.5" stroke-linecap="round" />
+                  <line x1="294" y1="324" x2="332" y2="324" stroke="#6366F1" stroke-width="2" stroke-linecap="round" />
+                  <!-- Pages edge -->
+                  <rect x="282" y="336" width="88" height="6" fill="#FFFFFF" />
+                  <rect class="found-ring hidden" x="272" y="296" width="108" height="56" rx="6" fill="none" stroke="#059669" stroke-width="4" stroke-dasharray="6 4" />
+                  <g class="found-badge hidden" transform="translate(358, 286)">
+                    <circle cx="14" cy="14" r="14" fill="#059669" />
+                    <path d="M8 14l4 4 8-8" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+                </g>
+
+                <!-- Pencil cup on desk (small prop) -->
+                <rect x="394" y="316" width="22" height="30" rx="2" fill="#0D9488" />
+                <line x1="400" y1="316" x2="397" y2="298" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" />
+                <line x1="409" y1="316" x2="413" y2="300" stroke="#E11D48" stroke-width="3" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <!-- Discovery Callout -->
+            <div
+              id="m1-feedback"
+              class="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-700 flex items-center gap-3"
+            >
+              <span class="font-semibold text-indigo-600 shrink-0">Bima:</span>
+              <span id="m1-feedback-text">
+                Ayo perhatikan sekeliling kelas, <span class="js-student-name">Penjelajah</span>! Klik 5 benda berbentuk segi empat.
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: Checklist & Next Button -->
+          <div class="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+            <div>
+              <h3 class="font-display font-bold text-lg text-slate-900">Daftar Temuan</h3>
+              <p class="text-xs text-slate-500 mt-1">Setiap benda memiliki bentuk dasar segi empat.</p>
+            </div>
+
+            <ul class="divide-y divide-slate-100" id="m1-checklist">
+              <li data-item="foto" class="py-3 flex items-center justify-between gap-3">
+                <span class="text-sm font-medium text-slate-700">1. Foto di Dinding</span>
+                <span class="m1-status text-xs font-medium text-slate-400">Belum ditemukan</span>
+              </li>
+              <li data-item="buku" class="py-3 flex items-center justify-between gap-3">
+                <span class="text-sm font-medium text-slate-700">2. Buku di Meja</span>
+                <span class="m1-status text-xs font-medium text-slate-400">Belum ditemukan</span>
+              </li>
+              <li data-item="jendela" class="py-3 flex items-center justify-between gap-3">
+                <span class="text-sm font-medium text-slate-700">3. Jendela</span>
+                <span class="m1-status text-xs font-medium text-slate-400">Belum ditemukan</span>
+              </li>
+              <li data-item="papan" class="py-3 flex items-center justify-between gap-3">
+                <span class="text-sm font-medium text-slate-700">4. Papan Tulis</span>
+                <span class="m1-status text-xs font-medium text-slate-400">Belum ditemukan</span>
+              </li>
+              <li data-item="lukisan" class="py-3 flex items-center justify-between gap-3">
+                <span class="text-sm font-medium text-slate-700">5. Bingkai Lukisan</span>
+                <span class="m1-status text-xs font-medium text-slate-400">Belum ditemukan</span>
+              </li>
+            </ul>
+
+            <button
+              id="btn-to-misi2"
+              type="button"
+              disabled
+              onclick="goToStage('misi2')"
+              class="w-full min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span id="btn-to-misi2-label">Temukan 5 Benda Dahulu</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 2: MISI 2 - LABORATORIUM PENGUKURAN (PENGGARIS)   -->
+      <!-- ========================================================= -->
+      <section id="section-misi2" class="hidden stage-panel space-y-6">
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-indigo-600">
+            Halo, <span class="js-student-name">Penjelajah</span>! · Misi 2: Laboratorium Pengukuran
+          </p>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+            Ukur Foto A dan Foto B dengan Penggaris Virtual
+          </h2>
+          <p class="text-sm sm:text-base text-slate-600">
+            Kita bawa foto yang ditemukan tadi ke meja ukur! Amati skala sentimeter (cm) pada penggaris di bawah dan di samping kedua foto berikut.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Left: Virtual Ruler Lab Stage -->
+          <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-6">
+            <!-- Foto A Measurement Diagram -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="font-display font-bold text-base text-slate-900">Foto A (Ukuran Kecil)</h3>
+                <span class="font-mono text-xs text-slate-500">Skala 1 unit = 1 cm</span>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 overflow-x-auto">
+                <svg viewBox="0 0 460 190" class="w-full min-w-[340px] h-auto block" role="img" aria-label="Foto A diukur dengan penggaris panjang 6 cm dan lebar 4 cm">
+                  <!-- Vertical Ruler (Left, 0 to 5 cm) -->
+                  <rect x="24" y="20" width="32" height="110" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+                  <!-- Horizontal Ruler (Bottom, 0 to 8 cm) -->
+                  <rect x="66" y="138" width="240" height="32" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+
+                  <!-- Vertical ticks (20px per cm, top y=30 is 0, y=110 is 4cm) -->
+                  <g stroke="#92400E" stroke-width="1.2" font-family="JetBrains Mono, monospace" font-size="10" fill="#78350F">
+                    <line x1="46" y1="30" x2="56" y2="30" /><text x="31" y="34">0</text>
+                    <line x1="50" y1="50" x2="56" y2="50" /><text x="31" y="54">1</text>
+                    <line x1="50" y1="70" x2="56" y2="70" /><text x="31" y="74">2</text>
+                    <line x1="50" y1="90" x2="56" y2="90" /><text x="31" y="94">3</text>
+                    <line x1="46" y1="110" x2="56" y2="110" /><text x="31" y="114">4</text>
+                    <line x1="50" y1="130" x2="56" y2="130" />
+                  </g>
+
+                  <!-- Horizontal ticks (20px per cm, x=76 is 0, x=196 is 6cm) -->
+                  <g stroke="#92400E" stroke-width="1.2" font-family="JetBrains Mono, monospace" font-size="10" fill="#78350F" text-anchor="middle">
+                    <line x1="76" y1="138" x2="76" y2="148" /><text x="76" y="162">0</text>
+                    <line x1="96" y1="138" x2="96" y2="145" /><text x="96" y="162">1</text>
+                    <line x1="116" y1="138" x2="116" y2="145" /><text x="116" y="162">2</text>
+                    <line x1="136" y1="138" x2="136" y2="145" /><text x="136" y="162">3</text>
+                    <line x1="156" y1="138" x2="156" y2="145" /><text x="156" y="162">4</text>
+                    <line x1="176" y1="138" x2="176" y2="145" /><text x="176" y="162">5</text>
+                    <line x1="196" y1="138" x2="196" y2="148" /><text x="196" y="162">6</text>
+                    <line x1="216" y1="138" x2="216" y2="145" /><text x="216" y="162">7</text>
+                    <line x1="236" y1="138" x2="236" y2="145" /><text x="236" y="162">8</text>
+                    <text x="284" y="160" font-weight="700">cm</text>
+                  </g>
+
+                  <!-- Alignment Dotted Guides -->
+                  <line x1="56" y1="30" x2="76" y2="30" stroke="#4F46E5" stroke-width="1.2" stroke-dasharray="3 3" />
+                  <line x1="56" y1="110" x2="76" y2="110" stroke="#4F46E5" stroke-width="1.2" stroke-dasharray="3 3" />
+                  <line x1="76" y1="110" x2="76" y2="138" stroke="#4F46E5" stroke-width="1.2" stroke-dasharray="3 3" />
+                  <line x1="196" y1="110" x2="196" y2="138" stroke="#4F46E5" stroke-width="1.2" stroke-dasharray="3 3" />
+
+                  <!-- Foto A Object (6 cm x 4 cm = 120px x 80px) -->
+                  <g transform="translate(76, 30)">
+                    <rect x="0" y="0" width="120" height="80" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3" />
+                    <polygon points="8,76 46,26 84,76" fill="#6366F1" />
+                    <polygon points="56,76 86,38 114,76" fill="#4338CA" />
+                    <circle cx="96" cy="20" r="8" fill="#FBBF24" />
+                    <text x="60" y="16" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#1E1B4B">FOTO A</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Foto B Measurement Diagram -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="font-display font-bold text-base text-slate-900">Foto B (Perbesaran)</h3>
+                <span class="font-mono text-xs text-slate-500">Skala 1 unit = 1 cm</span>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 overflow-x-auto">
+                <svg viewBox="0 0 460 250" class="w-full min-w-[340px] h-auto block" role="img" aria-label="Foto B diukur dengan penggaris panjang 12 cm dan lebar 8 cm">
+                  <!-- Vertical Ruler (Left, 0 to 9 cm, 20px per cm) -->
+                  <rect x="24" y="14" width="32" height="184" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+                  <!-- Horizontal Ruler (Bottom, 0 to 14 cm, 20px per cm) -->
+                  <rect x="66" y="206" width="330" height="32" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+
+                  <!-- Vertical ticks (y=24 is 0, y=184 is 8cm) -->
+                  <g stroke="#92400E" stroke-width="1.2" font-family="JetBrains Mono, monospace" font-size="10" fill="#78350F">
+                    <line x1="46" y1="24" x2="56" y2="24" /><text x="31" y="28">0</text>
+                    <line x1="50" y1="44" x2="56" y2="44" /><text x="31" y="48">1</text>
+                    <line x1="50" y1="64" x2="56" y2="64" /><text x="31" y="68">2</text>
+                    <line x1="50" y1="84" x2="56" y2="84" /><text x="31" y="88">3</text>
+                    <line x1="50" y1="104" x2="56" y2="104" /><text x="31" y="108">4</text>
+                    <line x1="50" y1="124" x2="56" y2="124" /><text x="31" y="128">5</text>
+                    <line x1="50" y1="144" x2="56" y2="144" /><text x="31" y="148">6</text>
+                    <line x1="50" y1="164" x2="56" y2="164" /><text x="31" y="168">7</text>
+                    <line x1="46" y1="184" x2="56" y2="184" /><text x="31" y="188">8</text>
+                  </g>
+
+                  <!-- Horizontal ticks (x=76 is 0, x=316 is 12cm) -->
+                  <g stroke="#92400E" stroke-width="1.2" font-family="JetBrains Mono, monospace" font-size="10" fill="#78350F" text-anchor="middle">
+                    <line x1="76" y1="206" x2="76" y2="216" /><text x="76" y="230">0</text>
+                    <line x1="96" y1="206" x2="96" y2="213" /><text x="96" y="230">1</text>
+                    <line x1="116" y1="206" x2="116" y2="213" /><text x="116" y="230">2</text>
+                    <line x1="136" y1="206" x2="136" y2="213" /><text x="136" y="230">3</text>
+                    <line x1="156" y1="206" x2="156" y2="213" /><text x="156" y="230">4</text>
+                    <line x1="176" y1="206" x2="176" y2="213" /><text x="176" y="230">5</text>
+                    <line x1="196" y1="206" x2="196" y2="213" /><text x="196" y="230">6</text>
+                    <line x1="216" y1="206" x2="216" y2="213" /><text x="216" y="230">7</text>
+                    <line x1="236" y1="206" x2="236" y2="213" /><text x="236" y="230">8</text>
+                    <line x1="256" y1="206" x2="256" y2="213" /><text x="256" y="230">9</text>
+                    <line x1="276" y1="206" x2="276" y2="213" /><text x="276" y="230">10</text>
+                    <line x1="296" y1="206" x2="296" y2="213" /><text x="296" y="230">11</text>
+                    <line x1="316" y1="206" x2="316" y2="216" /><text x="316" y="230">12</text>
+                    <line x1="336" y1="206" x2="336" y2="213" /><text x="336" y="230">13</text>
+                    <text x="374" y="229" font-weight="700">cm</text>
+                  </g>
+
+                  <!-- Alignment Dotted Guides -->
+                  <line x1="56" y1="24" x2="76" y2="24" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3" />
+                  <line x1="56" y1="184" x2="76" y2="184" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3" />
+                  <line x1="76" y1="184" x2="76" y2="206" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3" />
+                  <line x1="316" y1="184" x2="316" y2="206" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3" />
+
+                  <!-- Foto B Object (12 cm x 8 cm = 240px x 160px) -->
+                  <g transform="translate(76, 24)">
+                    <rect x="0" y="0" width="240" height="160" fill="#ECFDF5" stroke="#059669" stroke-width="3" />
+                    <polygon points="16,154 92,52 168,154" fill="#10B981" />
+                    <polygon points="112,154 172,76 228,154" fill="#047857" />
+                    <circle cx="192" cy="40" r="15" fill="#FBBF24" />
+                    <text x="120" y="24" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#064E3B">FOTO B</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Measurement Choice Panel -->
+          <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+            <div class="space-y-1.5">
+              <h3 class="font-display font-bold text-lg text-slate-900">Hasil Pengamatan Penggaris</h3>
+              <p class="text-sm text-slate-600">
+                Berdasarkan skala penggaris di samping kiri (Lebar) dan bawah (Panjang), manakah ukuran Foto A dan Foto B yang paling tepat?
+              </p>
+            </div>
+
+            <div class="space-y-2.5" id="m2-options">
+              <button
+                type="button"
+                onclick="checkMisi2(this, false)"
+                class="m2-option w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-colors font-sans text-sm text-slate-800 space-y-1"
+              >
+                <div class="font-semibold">Pilihan A</div>
+                <div class="font-mono text-xs text-slate-600 tabular-nums">
+                  Foto A: Panjang = 4 cm, Lebar = 6 cm · Foto B: Panjang = 8 cm, Lebar = 12 cm
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onclick="checkMisi2(this, true)"
+                class="m2-option w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-colors font-sans text-sm text-slate-800 space-y-1"
+              >
+                <div class="font-semibold">Pilihan B</div>
+                <div class="font-mono text-xs text-slate-600 tabular-nums">
+                  Foto A: Panjang = 6 cm, Lebar = 4 cm · Foto B: Panjang = 12 cm, Lebar = 8 cm
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onclick="checkMisi2(this, false)"
+                class="m2-option w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-colors font-sans text-sm text-slate-800 space-y-1"
+              >
+                <div class="font-semibold">Pilihan C</div>
+                <div class="font-mono text-xs text-slate-600 tabular-nums">
+                  Foto A: Panjang = 7 cm, Lebar = 5 cm · Foto B: Panjang = 13 cm, Lebar = 9 cm
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onclick="checkMisi2(this, false)"
+                class="m2-option w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-colors font-sans text-sm text-slate-800 space-y-1"
+              >
+                <div class="font-semibold">Pilihan D</div>
+                <div class="font-mono text-xs text-slate-600 tabular-nums">
+                  Foto A: Panjang = 6 cm, Lebar = 3 cm · Foto B: Panjang = 10 cm, Lebar = 8 cm
+                </div>
+              </button>
+            </div>
+
+            <!-- Feedback Box -->
+            <div id="m2-feedback" class="hidden rounded-xl p-4 text-sm border flex items-start gap-3"></div>
+
+            <button
+              id="btn-to-misi3"
+              type="button"
+              disabled
+              onclick="goToStage('misi3')"
+              class="w-full min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span id="btn-to-misi3-label">Pilih Jawaban yang Benar Dahulu</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 3: MISI 3 - MENGHITUNG PERBANDINGAN SISI          -->
+      <!-- ========================================================= -->
+      <section id="section-misi3" class="hidden stage-panel space-y-6">
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-indigo-600">
+            Halo, <span class="js-student-name">Penjelajah</span>! · Misi 3: Perbandingan Sisi
+          </p>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+            Sederhanakan Rasio Panjang dan Lebar
+          </h2>
+          <p class="text-sm sm:text-base text-slate-600">
+            Gunakan data hasil pengukuran Foto A dan Foto B di bawah ini untuk menemukan perbandingan sisi yang paling sederhana.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Left: Summary Table -->
+          <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+            <h3 class="font-display font-bold text-lg text-slate-900">Tabel Ukuran Hasil Lab</h3>
+            <div class="overflow-hidden border border-slate-200 rounded-xl">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Objek</th>
+                    <th class="px-4 py-3">Panjang</th>
+                    <th class="px-4 py-3">Lebar</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-mono tabular-nums">
+                  <tr>
+                    <td class="px-4 py-3 font-sans font-semibold text-indigo-700">Foto A</td>
+                    <td class="px-4 py-3 text-slate-800">6 cm</td>
+                    <td class="px-4 py-3 text-slate-800">4 cm</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-sans font-semibold text-emerald-700">Foto B</td>
+                    <td class="px-4 py-3 text-slate-800">12 cm</td>
+                    <td class="px-4 py-3 text-slate-800">8 cm</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="rounded-xl bg-amber-50 border border-amber-200/80 p-4 text-xs sm:text-sm text-amber-900 space-y-1">
+              <div class="font-semibold">Petunjuk Rara:</div>
+              <p>
+                Untuk menyederhanakan perbandingan seperti <span class="font-mono font-semibold">6 : 12</span>, bagilah kedua bilangan dengan FPB-nya hingga menjadi bentuk paling sederhana (contoh penulisan: <span class="font-mono font-semibold">1:2</span> atau <span class="font-mono font-semibold">1 : 2</span>).
+              </p>
+            </div>
+          </div>
+
+          <!-- Right: Text Entry Form -->
+          <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+            <form id="m3-form" class="space-y-5" onsubmit="event.preventDefault(); checkMisi3();">
+              <div>
+                <label for="ratio-panjang" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  1. Perbandingan Panjang Foto A : Foto B (Panjang A = 6 cm, Panjang B = 12 cm)
+                </label>
+                <input
+                  type="text"
+                  id="ratio-panjang"
+                  placeholder="Contoh format: 1:2"
+                  autocomplete="off"
+                  class="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 font-mono text-slate-900 placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                />
+              </div>
+
+              <div>
+                <label for="ratio-lebar" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  2. Perbandingan Lebar Foto A : Foto B (Lebar A = 4 cm, Lebar B = 8 cm)
+                </label>
+                <input
+                  type="text"
+                  id="ratio-lebar"
+                  placeholder="Contoh format: 1:2"
+                  autocomplete="off"
+                  class="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 font-mono text-slate-900 placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                />
+              </div>
+
+              <div id="m3-feedback" class="hidden rounded-xl p-4 text-sm border flex items-start gap-3"></div>
+
+              <div class="flex flex-col sm:flex-row gap-3 pt-1">
+                <button
+                  type="submit"
+                  class="min-h-[46px] px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm whitespace-nowrap transition-colors"
+                >
+                  Periksa Jawaban
+                </button>
+                <button
+                  id="btn-to-misi4"
+                  type="button"
+                  disabled
+                  onclick="goToStage('misi4')"
+                  class="flex-1 min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <span id="btn-to-misi4-label">Lanjut ke Misi 4</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 4: MISI 4 - PENGELOMPOKAN BANGUN (DRAG & CLICK)   -->
+      <!-- ========================================================= -->
+      <section id="section-misi4" class="hidden stage-panel space-y-6">
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-indigo-600">
+            Halo, <span class="js-student-name">Penjelajah</span>! · Misi 4: Uji Pengelompokan Bangun
+          </p>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+            Kelompokkan Pasangan Bangun: Sebangun atau Tidak?
+          </h2>
+          <p class="text-sm sm:text-base text-slate-600">
+            Seret (drag &amp; drop) setiap kartu ke kotak kategori yang sesuai. Di HP/tablet, cukup <strong class="text-slate-800">ketuk kartu</strong> lalu <strong class="text-slate-800">ketuk kotak tujuan</strong>.
+          </p>
+        </div>
+
+        <!-- Card Bank (Unplaced Cards) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="font-display font-bold text-base text-slate-900">Kartu Pasangan Bangun</h3>
+            <span id="m4-selected-hint" class="text-xs font-medium text-indigo-600">
+              Seret kartu atau klik untuk memilih
+            </span>
+          </div>
+          <div
+            id="m4-bank"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-[96px] p-2 rounded-xl bg-slate-50 border border-dashed border-slate-300"
+            ondragover="allowDrop(event)"
+            ondrop="dropCard(event, 'bank')"
+          >
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Two Target Drop Zones -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Box 1: Sebangun -->
+          <div
+            id="zone-sebangun"
+            onclick="placeSelectedCard('sebangun')"
+            ondragover="allowDrop(event, 'zone-sebangun')"
+            ondragleave="leaveDrop('zone-sebangun')"
+            ondrop="dropCard(event, 'sebangun')"
+            class="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm min-h-[220px] flex flex-col gap-3 cursor-pointer transition-colors hover:border-emerald-400"
+          >
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <h3 class="font-display font-bold text-lg text-emerald-800">Sebangun</h3>
+              </div>
+              <span class="text-xs text-slate-500">Klik di sini untuk menaruh kartu</span>
+            </div>
+            <div id="list-sebangun" class="flex-1 grid grid-cols-1 gap-3 content-start"></div>
+          </div>
+
+          <!-- Box 2: Tidak Sebangun -->
+          <div
+            id="zone-tidak"
+            onclick="placeSelectedCard('tidak')"
+            ondragover="allowDrop(event, 'zone-tidak')"
+            ondragleave="leaveDrop('zone-tidak')"
+            ondrop="dropCard(event, 'tidak')"
+            class="bg-white border-2 border-amber-200 rounded-2xl p-5 shadow-sm min-h-[220px] flex flex-col gap-3 cursor-pointer transition-colors hover:border-amber-400"
+          >
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <h3 class="font-display font-bold text-lg text-amber-900">Tidak Sebangun</h3>
+              </div>
+              <span class="text-xs text-slate-500">Klik di sini untuk menaruh kartu</span>
+            </div>
+            <div id="list-tidak" class="flex-1 grid grid-cols-1 gap-3 content-start"></div>
+          </div>
+        </div>
+
+        <!-- Feedback & Controls -->
+        <div id="m4-feedback" class="hidden rounded-xl p-4 text-sm border space-y-2"></div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="flex gap-3">
+            <button
+              type="button"
+              onclick="checkMisi4()"
+              class="min-h-[46px] px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm whitespace-nowrap transition-colors"
+            >
+              Cek Pengelompokan
+            </button>
+            <button
+              type="button"
+              onclick="resetMisi4()"
+              class="min-h-[46px] px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm whitespace-nowrap transition-colors"
+            >
+              Susun Ulang
+            </button>
+          </div>
+
+          <button
+            id="btn-to-misi5"
+            type="button"
+            disabled
+            onclick="goToStage('misi5')"
+            class="min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <span id="btn-to-misi5-label">Lanjut ke Misi 5</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 5: MISI 5 - MATERI & KESIMPULAN INTERAKTIF        -->
+      <!-- ========================================================= -->
+      <section id="section-misi5" class="hidden stage-panel space-y-6">
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-indigo-600">
+            Halo, <span class="js-student-name">Penjelajah</span>! · Misi 5: Materi &amp; Kesimpulan
+          </p>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+            Merumuskan Konsep Kesebangunan Bangun Datar
+          </h2>
+          <p class="text-sm sm:text-base text-slate-600">
+            Dari semua percobaanmu tadi, mari kunci 3 kesimpulan utama sebelum menghadapi Evaluasi Akhir! Klik tombol <strong>Selanjutnya</strong> untuk membuka tiap kartu.
+          </p>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <span id="m5-step-indicator">Kartu 1 dari 3 terbuka</span>
+        </div>
+
+        <!-- Progressive Cards Stack -->
+        <div class="space-y-4">
+          <!-- Card 1: Definisi -->
+          <article id="m5-card-1" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="font-display font-bold text-xl text-indigo-700">1. Definisi Kesebangunan</h3>
+              <span class="font-mono text-xs font-semibold text-emerald-700">Simbol: ~</span>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+              Dua bangun datar dikatakan <strong>sebangun</strong> apabila kedua bangun tersebut memiliki <strong>bentuk yang sama</strong>, walaupun ukurannya berbeda (merupakan hasil perbesaran atau pengecilan yang proporsional).
+            </p>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-wrap items-center gap-6">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-6 bg-indigo-200 border-2 border-indigo-600 rounded-sm"></div>
+                <span class="font-mono text-sm font-bold text-indigo-700">~</span>
+                <div class="w-16 h-11 bg-emerald-100 border-2 border-emerald-600 rounded-sm"></div>
+              </div>
+              <span class="text-xs sm:text-sm text-slate-600">
+                Foto A (<span class="font-mono">6×4 cm</span>) dan Foto B (<span class="font-mono">12×8 cm</span>) memiliki bentuk sama persis sehingga sebangun.
+              </span>
+            </div>
+          </article>
+
+          <!-- Card 2: Dua Syarat Mutlak -->
+          <article id="m5-card-2" class="hidden stage-panel bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <h3 class="font-display font-bold text-xl text-emerald-700">2. Dua Syarat Mutlak Kesebangunan</h3>
+            <p class="text-sm text-slate-600">
+              Agar dua bangun datar sah disebut sebangun, <strong>kedua syarat</strong> berikut wajib terpenuhi secara bersamaan:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-indigo-50/60 border border-indigo-200 rounded-xl p-4 space-y-1.5">
+                <div class="font-display font-bold text-base text-indigo-900">Syarat A: Sisi Bersesuaian Sebanding</div>
+                <p class="text-sm text-slate-700">
+                  Perbandingan panjang semua sisi yang bersesuaian harus memiliki nilai rasio yang sama.
+                </p>
+                <div class="font-mono text-xs text-indigo-800 pt-1">
+                  Panjang A / Panjang B = Lebar A / Lebar B = 1 / 2
+                </div>
+              </div>
+              <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 space-y-1.5">
+                <div class="font-display font-bold text-base text-emerald-900">Syarat B: Sudut Bersesuaian Sama Besar</div>
+                <p class="text-sm text-slate-700">
+                  Semua sudut yang posisinya bersesuaian harus memiliki besar derajat yang sama persis.
+                </p>
+                <div class="font-mono text-xs text-emerald-800 pt-1">
+                  ∠A₁ = ∠B₁, ∠A₂ = ∠B₂, dst.
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3: Contoh vs Bukan Contoh -->
+          <article id="m5-card-3" class="hidden stage-panel bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <h3 class="font-display font-bold text-xl text-amber-800">3. Contoh vs Bukan Contoh</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-emerald-50/50 border border-emerald-200 rounded-xl p-4 space-y-2">
+                <div class="flex items-center gap-2 font-bold text-emerald-800 text-sm">
+                  <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Contoh Sebangun</span>
+                </div>
+                <p class="text-sm text-slate-700">
+                  <strong>Semua Persegi</strong> (misal sisi <span class="font-mono">3 cm</span> dan <span class="font-mono">6 cm</span>) selalu sebangun karena semua sudutnya <span class="font-mono">90°</span> dan rasio keempat sisinya sama (<span class="font-mono">1:2</span>).
+                </p>
+              </div>
+              <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-4 space-y-2">
+                <div class="flex items-center gap-2 font-bold text-rose-800 text-sm">
+                  <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Bukan Contoh (Tidak Sebangun)</span>
+                </div>
+                <p class="text-sm text-slate-700">
+                  Jajar genjang sudut <span class="font-mono">60°</span> (sisi <span class="font-mono">4 &amp; 2 cm</span>) vs sudut <span class="font-mono">80°</span> (sisi <span class="font-mono">8 &amp; 4 cm</span>). Walau rasio sisinya <span class="font-mono">1:2</span>, sudutnya <strong>tidak sama besar</strong>!
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Navigation Controls for Misi 5 -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <button
+            id="btn-m5-next-card"
+            type="button"
+            onclick="revealNextMisi5Card()"
+            class="w-full sm:w-auto min-h-[46px] px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm whitespace-nowrap transition-colors"
+          >
+            Selanjutnya: Buka Syarat Kesebangunan
+          </button>
+
+          <button
+            id="btn-to-quiz"
+            type="button"
+            disabled
+            onclick="goToStage('quiz')"
+            class="w-full sm:w-auto min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed"
+          >
+            Mulai Evaluasi Akhir (5 Soal)
+          </button>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 6: EVALUASI AKHIR - KUIS PILIHAN GANDA (5 SOAL)   -->
+      <!-- ========================================================= -->
+      <section id="section-quiz" class="hidden stage-panel space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div class="space-y-1">
+            <p class="text-sm font-semibold text-indigo-600">
+              Halo, <span class="js-student-name">Penjelajah</span>! · Evaluasi Akhir
+            </p>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+              Tantangan Kuis Kesebangunan
+            </h2>
+          </div>
+
+          <div class="flex items-center gap-4 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm self-start sm:self-auto">
+            <span id="quiz-progress-label" class="font-semibold text-slate-700 tabular-nums">Soal 1 dari 5</span>
+            <span class="text-slate-300" aria-hidden="true">·</span>
+            <span>Skor: <strong id="quiz-live-score" class="font-mono text-indigo-600 tabular-nums">0</strong></span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <!-- Question Prompt & Optional Visual -->
+          <div class="space-y-4">
+            <h3 id="quiz-question-text" class="font-display text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+              Memuat soal...
+            </h3>
+            <div id="quiz-diagram-slot" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4"></div>
+          </div>
+
+          <!-- Options Container -->
+          <div id="quiz-options-container" class="grid grid-cols-1 gap-3"></div>
+
+          <!-- Immediate Explanation Feedback -->
+          <div id="quiz-explanation-box" class="hidden rounded-xl p-4 border space-y-1.5 text-sm">
+            <div id="quiz-explanation-title" class="font-bold flex items-center gap-2"></div>
+            <p id="quiz-explanation-text" class="text-slate-700 leading-relaxed"></p>
+          </div>
+
+          <!-- Next Question Button -->
+          <div class="flex justify-end pt-2">
+            <button
+              id="btn-quiz-next"
+              type="button"
+              disabled
+              onclick="nextQuizQuestion()"
+              class="min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed"
+            >
+              Soal Berikutnya
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 7: REFLEKSI BELAJAR                               -->
+      <!-- ========================================================= -->
+      <section id="section-reflection" class="hidden stage-panel space-y-6">
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-emerald-700">
+            Selamat, <span class="js-student-name">Penjelajah</span>! · Tahap Refleksi
+          </p>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+            Bagaimana Pengalaman Petualanganmu Hari Ini?
+          </h2>
+          <p class="text-sm sm:text-base text-slate-600">
+            Isi refleksi singkat berikut untuk membuka Sertifikat Kelulusan Misi milikmu.
+          </p>
+        </div>
+
+        <form id="reflection-form" class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6" novalidate>
+          <!-- 3-Scale Understanding Selector -->
+          <div class="space-y-3">
+            <label class="block text-sm font-semibold text-slate-800">
+              1. Seberapa paham kamu tentang materi Kesebangunan Bangun Datar sekarang?
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="reflection-scale-options">
+              <button
+                type="button"
+                data-level="Sangat Paham"
+                onclick="selectReflectionLevel(this)"
+                class="refl-btn text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 transition-colors space-y-1"
+              >
+                <div class="font-display font-bold text-slate-900">Sangat Paham</div>
+                <div class="text-xs text-slate-500">Siap menentukan syarat &amp; menghitung sisi sebangun.</div>
+              </button>
+
+              <button
+                type="button"
+                data-level="Cukup Paham"
+                onclick="selectReflectionLevel(this)"
+                class="refl-btn text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 transition-colors space-y-1"
+              >
+                <div class="font-display font-bold text-slate-900">Cukup Paham</div>
+                <div class="text-xs text-slate-500">Mengerti konsep dasar, butuh sedikit latihan lagi.</div>
+              </button>
+
+              <button
+                type="button"
+                data-level="Perlu Bimbingan"
+                onclick="selectReflectionLevel(this)"
+                class="refl-btn text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 transition-colors space-y-1"
+              >
+                <div class="font-display font-bold text-slate-900">Masih Bingung</div>
+                <div class="text-xs text-slate-500">Ingin mengulang penjelasan syarat kesebangunan.</div>
+              </button>
+            </div>
+            <p id="reflection-scale-error" class="hidden text-sm text-rose-600 font-medium">
+              Pilih salah satu tingkat pemahaman di atas.
+            </p>
+          </div>
+
+          <!-- Message / Impression Textarea -->
+          <div class="space-y-2">
+            <label for="reflection-message" class="block text-sm font-semibold text-slate-800">
+              2. Pesan atau Kesan Belajar
+            </label>
+            <textarea
+              id="reflection-message"
+              rows="3"
+              placeholder="Tuliskan hal paling menarik yang kamu pelajari hari ini (misal: ternyata jajar genjang dengan perbandingan sisi sama belum tentu sebangun!)..."
+              class="w-full p-4 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 text-sm"
+            ></textarea>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="min-h-[48px] px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm sm:text-base whitespace-nowrap transition-colors"
+            >
+              Terbitkan Sertifikat Kelulusan
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SECTION 8: SERTIFIKAT KELULUSAN                           -->
+      <!-- ========================================================= -->
+      <section id="section-certificate" class="hidden stage-panel space-y-6">
+        <div id="certificate-card" class="p-1.5 rounded-3xl cert-border-pattern shadow-md">
+          <div class="bg-white rounded-[20px] p-6 sm:p-10 text-center space-y-6 relative">
+            <!-- Crest Seal -->
+            <div class="mx-auto w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+              <svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8L12 3z" />
+              </svg>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                Sertifikat Penyelesaian Misi · The Similarity Quest
+              </p>
+              <h2 class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900">
+                Piagam Penjelajah Geometri
+              </h2>
+              <p class="text-sm text-slate-500">Diberikan dengan bangga kepada:</p>
+            </div>
+
+            <!-- Student Name Highlight -->
+            <div class="py-3 border-y border-slate-200 max-w-lg mx-auto">
+              <div id="cert-student-name" class="font-display text-3xl sm:text-4xl font-extrabold text-indigo-700">
+                Nama Siswa
+              </div>
+            </div>
+
+            <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
+              Telah berhasil menuntaskan seluruh misi eksplorasi, pengukuran penggaris virtual, perbandingan sisi, klasifikasi bangun, serta Evaluasi Akhir pada materi <strong>Kesebangunan Bangun Datar</strong>.
+            </p>
+
+            <!-- Dynamic Score & Predicate Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="text-xs text-slate-500">Skor Akhir Kuis</div>
+                <div id="cert-score" class="font-mono text-2xl font-bold text-emerald-600 tabular-nums mt-1">100 / 100</div>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="text-xs text-slate-500">Predikat Kelulusan</div>
+                <div id="cert-predicate" class="font-display text-base font-bold text-indigo-700 mt-1">
+                  Grand Master Geometri
+                </div>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="text-xs text-slate-500">Pemahaman Diri</div>
+                <div id="cert-reflection-level" class="font-display text-base font-bold text-amber-700 mt-1">
+                  Sangat Paham
+                </div>
+              </div>
+            </div>
+
+            <!-- Reflection Note Preview -->
+            <div id="cert-note-wrapper" class="hidden max-w-2xl mx-auto bg-amber-50/60 border border-amber-200/80 rounded-xl px-5 py-3 text-sm text-slate-700">
+              <span class="font-semibold text-amber-900">Catatan Refleksi:</span>
+              <span id="cert-reflection-note" class="italic"></span>
+            </div>
+
+            <!-- Signatures: Rara & Bima -->
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-8 text-xs text-slate-500">
+              <div>
+                <div class="font-display font-bold text-slate-800 text-sm">Rara</div>
+                <div>Pemandu Analisis Geometri</div>
+              </div>
+              <div class="hidden sm:block h-8 w-px bg-slate-200"></div>
+              <div>
+                <div class="font-display font-bold text-slate-800 text-sm">Bima</div>
+                <div>Pemandu Lab Pengukuran</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Action Buttons -->
+        <div class="no-print flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            type="button"
+            onclick="window.print()"
+            class="w-full sm:w-auto min-h-[46px] px-6 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm whitespace-nowrap transition-colors"
+          >
+            Cetak / Simpan PDF Sertifikat
+          </button>
+          <button
+            type="button"
+            onclick="restartQuest()"
+            class="w-full sm:w-auto min-h-[46px] px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm whitespace-nowrap transition-colors"
+          >
+            Ulangi Petualangan
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- VANILLA JAVASCRIPT APPLICATION LOGIC                      -->
+    <!-- ========================================================= -->
+    <script>
+      // Global Quest State
+      let studentName = '';
+      let currentStage = 'welcome';
+
+      // Misi 1 State
+      const roomObjects = {
+        foto: { label: 'Foto di Dinding', clue: 'Bingkai foto ini berbentuk persegi panjang! Kita akan ukur foto ini di lab nanti.' },
+        buku: { label: 'Buku di Meja', clue: 'Sampul buku matematika ini berbentuk segi empat dengan sudut siku-siku.' },
+        jendela: { label: 'Jendela', clue: 'Kaca jendela kelas tersusun dari bidang persegi panjang yang rapi.' },
+        papan: { label: 'Papan Tulis', clue: 'Papan tulis hijau ini berbentuk persegi panjang besar.' },
+        lukisan: { label: 'Bingkai Lukisan', clue: 'Bingkai lukisan di kanan dinding juga berbentuk segi empat!' },
+      };
+      let foundObjects = new Set();
+
+      // Misi 2 & 3 State
+      let misi2Solved = false;
+      let misi3Solved = false;
+
+      // Misi 4 State (Drag & Drop + Tap)
+      const misi4CardsData = [
+        {
+          id: 'card-1',
+          title: 'Pasangan Persegi Panjang A',
+          desc: '4 × 2 cm dan 8 × 4 cm (sudut 90°)',
+          correctZone: 'sebangun',
+          reason: 'Rasio panjang 4:8 = 1:2, rasio lebar 2:4 = 1:2, dan semua sudut 90°.',
+          svg: `<svg viewBox="0 0 140 54" class="w-full h-12">
+                  <rect x="6" y="14" width="32" height="16" fill="#E0E7FF" stroke="#4F46E5" stroke-width="2"/>
+                  <text x="22" y="42" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">4×2</text>
+                  <rect x="64" y="6" width="64" height="32" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+                  <text x="96" y="49" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">8×4</text>
+                </svg>`,
+        },
+        {
+          id: 'card-2',
+          title: 'Pasangan Persegi Panjang B',
+          desc: '5 × 3 cm dan 10 × 4 cm (sudut 90°)',
+          correctZone: 'tidak',
+          reason: 'Rasio panjang 5:10 = 1:2, tetapi rasio lebar 3:4 (tidak sama!).',
+          svg: `<svg viewBox="0 0 140 54" class="w-full h-12">
+                  <rect x="6" y="12" width="35" height="21" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+                  <text x="23" y="45" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">5×3</text>
+                  <rect x="62" y="8" width="70" height="28" fill="#FFE4E6" stroke="#E11D48" stroke-width="2"/>
+                  <text x="97" y="48" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">10×4</text>
+                </svg>`,
+        },
+        {
+          id: 'card-3',
+          title: 'Pasangan Persegi',
+          desc: 'Sisi 3 cm dan sisi 6 cm (sudut 90°)',
+          correctZone: 'sebangun',
+          reason: 'Semua sisi bersesuaian berbanding 3:6 = 1:2 dan semua sudutnya 90°.',
+          svg: `<svg viewBox="0 0 140 54" class="w-full h-12">
+                  <rect x="14" y="14" width="22" height="22" fill="#E0E7FF" stroke="#4F46E5" stroke-width="2"/>
+                  <text x="25" y="48" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">3×3</text>
+                  <rect x="74" y="4" width="40" height="40" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+                  <text x="94" y="53" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">6×6</text>
+                </svg>`,
+        },
+        {
+          id: 'card-4',
+          title: 'Pasangan Jajar Genjang',
+          desc: 'Sudut 60° (4 & 2 cm) dan sudut 80° (8 & 4 cm)',
+          correctZone: 'tidak',
+          reason: 'Rasio sisi memang 1:2, tetapi sudut bersesuaiannya berbeda (60° ≠ 80°).',
+          svg: `<svg viewBox="0 0 140 54" class="w-full h-12">
+                  <polygon points="12,34 24,14 48,14 36,34" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+                  <text x="28" y="47" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">60°</text>
+                  <polygon points="66,38 74,8 126,8 118,38" fill="#FFE4E6" stroke="#E11D48" stroke-width="2"/>
+                  <text x="96" y="49" font-size="9" text-anchor="middle" fill="#334155" font-family="JetBrains Mono">80°</text>
+                </svg>`,
+        },
+      ];
+      let cardPlacements = { 'card-1': 'bank', 'card-2': 'bank', 'card-3': 'bank', 'card-4': 'bank' };
+      let selectedCardId = null;
+
+      // Misi 5 State
+      let misi5Step = 1;
+
+      // Quiz State
+      const quizQuestions = [
+        {
+          question: 'Sebuah foto berukuran 4 cm × 6 cm diperbesar secara sebangun sehingga sisi pendeknya menjadi 12 cm. Berapakah panjang sisi panjang foto setelah diperbesar?',
+          diagram: `<div class="flex flex-wrap items-center justify-center gap-8 py-2">
+                      <div class="text-center">
+                        <div class="w-16 h-24 mx-auto bg-indigo-100 border-2 border-indigo-600 rounded flex items-center justify-center font-mono text-xs font-bold text-indigo-800">4 × 6</div>
+                        <span class="text-xs text-slate-500 mt-1 block">Foto Awal (cm)</span>
+                      </div>
+                      <span class="font-mono font-bold text-slate-400">→</span>
+                      <div class="text-center">
+                        <div class="w-24 h-36 mx-auto bg-emerald-100 border-2 border-emerald-600 rounded flex items-center justify-center font-mono text-xs font-bold text-emerald-800">12 × ?</div>
+                        <span class="text-xs text-slate-500 mt-1 block">Foto Diperbesar (cm)</span>
+                      </div>
+                    </div>`,
+          options: ['14 cm', '16 cm', '18 cm', '24 cm'],
+          correctIndex: 2,
+          explanation: 'Skala perbesaran = 12 ÷ 4 = 3 kali. Maka sisi panjang = 6 × 3 = 18 cm.',
+        },
+        {
+          question: 'Manakah pasangan bangun datar di bawah ini yang PASTI selalu sebangun tanpa perlu mengukur ulang sisinya?',
+          diagram: '',
+          options: [
+            'Dua buah persegi panjang sembarang',
+            'Dua buah persegi dengan ukuran berbeda',
+            'Dua buah jajar genjang sembarang',
+            'Dua buah belah ketupat dengan panjang sisi berbeda',
+          ],
+          correctIndex: 1,
+          explanation: 'Dua persegi selalu memiliki empat sudut 90° dan perbandingan keempat sisinya pasti sama, sehingga pasti sebangun.',
+        },
+        {
+          question: 'Diketahui dua jajar genjang: Bangun P memiliki sisi 6 cm dan 4 cm dengan sudut lancip 65°. Bangun Q memiliki sisi 12 cm dan 8 cm dengan sudut lancip 75°. Apakah P dan Q sebangun?',
+          diagram: '',
+          options: [
+            'Sebangun, karena perbandingan sisinya sama-sama 1 : 2',
+            'Sebangun, karena keduanya sama-sama jajar genjang',
+            'Tidak sebangun, karena sudut bersesuaiannya tidak sama besar',
+            'Tidak sebangun, karena panjang sisinya berbeda',
+          ],
+          correctIndex: 2,
+          explanation: 'Walaupun perbandingan sisi bersesuaiannya senilai (1:2), sudut bersesuaian tidak sama besar (65° ≠ 75°), sehingga syarat kedua gagal.',
+        },
+        {
+          question: 'Dua persegi panjang K dan L sebangun. Ukuran K adalah panjang 9 cm dan lebar 6 cm. Jika lebar persegi panjang L adalah 10 cm, berapakah panjang persegi panjang L?',
+          diagram: '',
+          options: ['12 cm', '13,5 cm', '15 cm', '18 cm'],
+          correctIndex: 2,
+          explanation: 'Gunakan perbandingan senilai: 9 / 6 = Panjang L / 10. Maka Panjang L = (9 × 10) ÷ 6 = 90 ÷ 6 = 15 cm.',
+        },
+        {
+          question: 'Sebuah lukisan berukuran panjang 15 cm dan lebar 10 cm akan dicetak menjadi poster yang sebangun dengan lebar 30 cm. Berapakah panjang poster tersebut?',
+          diagram: '',
+          options: ['35 cm', '40 cm', '45 cm', '60 cm'],
+          correctIndex: 2,
+          explanation: 'Lebar diperbesar dari 10 cm menjadi 30 cm (3 kali lipat). Maka panjang poster = 15 × 3 = 45 cm.',
+        },
+      ];
+      let currentQuizIdx = 0;
+      let quizScore = 0;
+      let quizAnswered = false;
+
+      // Reflection State
+      let selectedReflectionLevel = '';
+
+      // Stage Progress Metadata
+      const stageMeta = {
+        welcome: { step: 0, label: 'Selamat Datang', pct: 0 },
+        misi1: { step: 1, label: 'Misi 1 dari 7 · Eksplorasi', pct: 14 },
+        misi2: { step: 2, label: 'Misi 2 dari 7 · Laboratorium', pct: 28 },
+        misi3: { step: 3, label: 'Misi 3 dari 7 · Perbandingan', pct: 42 },
+        misi4: { step: 4, label: 'Misi 4 dari 7 · Klasifikasi', pct: 57 },
+        misi5: { step: 5, label: 'Misi 5 dari 7 · Kesimpulan', pct: 71 },
+        quiz: { step: 6, label: 'Tahap 6 dari 7 · Evaluasi', pct: 85 },
+        reflection: { step: 7, label: 'Tahap 7 dari 7 · Refleksi', pct: 95 },
+        certificate: { step: 8, label: 'Selesai · Sertifikat', pct: 100 },
+      };
+
+      // =========================================================
+      // NAVIGATION & PERSONALIZATION
+      // =========================================================
+      function goToStage(stageId) {
+        currentStage = stageId;
+        const allSections = [
+          'welcome',
+          'misi1',
+          'misi2',
+          'misi3',
+          'misi4',
+          'misi5',
+          'quiz',
+          'reflection',
+          'certificate',
+        ];
+        allSections.forEach((id) => {
+          const el = document.getElementById('section-' + id);
+          if (el) {
+            if (id === stageId) {
+              el.classList.remove('hidden');
+            } else {
+              el.classList.add('hidden');
+            }
+          }
+        });
+
+        const header = document.getElementById('quest-header');
+        if (stageId === 'welcome') {
+          header.classList.add('hidden');
+        } else {
+          header.classList.remove('hidden');
+          const meta = stageMeta[stageId];
+          document.getElementById('header-step-label').textContent = meta.label;
+          document.getElementById('progress-bar-fill').style.width = meta.pct + '%';
+          document.getElementById('progress-bar-container').setAttribute('aria-valuenow', String(meta.pct));
+          document.getElementById('progress-percent-text').textContent = meta.pct + '%';
+        }
+
+        if (stageId === 'misi4') {
+          renderMisi4Cards();
+        } else if (stageId === 'quiz') {
+          renderQuizQuestion();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function updateStudentNameEverywhere(name) {
+        document.getElementById('header-student-name').textContent = name;
+        document.querySelectorAll('.js-student-name').forEach((el) => {
+          el.textContent = name;
+        });
+      }
+
+      // Welcome Form Handler
+      document.getElementById('welcome-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const input = document.getElementById('student-name-input');
+        const err = document.getElementById('welcome-error');
+        const trimmed = input.value.trim();
+
+        if (!trimmed) {
+          err.classList.remove('hidden');
+          input.classList.add('border-rose-500');
+          input.focus();
+          return;
+        }
+
+        err.classList.add('hidden');
+        input.classList.remove('border-rose-500');
+        studentName = trimmed;
+        updateStudentNameEverywhere(studentName);
+        goToStage('misi1');
+      });
+
+      // =========================================================
+      // MISI 1: EKSPLORASI RUANGAN
+      // =========================================================
+      function foundRoomObject(key) {
+        if (!roomObjects[key]) return;
+        const alreadyFound = foundObjects.has(key);
+        foundObjects.add(key);
+
+        // Visual SVG highlight
+        const groupEl = document.getElementById('obj-' + key);
+        if (groupEl) {
+          groupEl.classList.add('is-found');
+          const ring = groupEl.querySelector('.found-ring');
+          const badge = groupEl.querySelector('.found-badge');
+          if (ring) ring.classList.remove('hidden');
+          if (badge) badge.classList.remove('hidden');
+        }
+
+        // Update checklist row
+        const li = document.querySelector('#m1-checklist li[data-item="' + key + '"]');
+        if (li) {
+          const statusEl = li.querySelector('.m1-status');
+          statusEl.className = 'm1-status text-xs font-semibold text-emerald-700 flex items-center gap-1';
+          statusEl.innerHTML = `
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Ditemukan</span>
+          `;
+        }
+
+        // Update Counter
+        const count = foundObjects.size;
+        document.getElementById('m1-counter').textContent = count + '/5';
+
+        // Update Feedback Callout
+        const fbBox = document.getElementById('m1-feedback');
+        const fbText = document.getElementById('m1-feedback-text');
+        fbBox.className = 'rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-900 flex items-center gap-3';
+        fbText.textContent = (alreadyFound ? '[Sudah ditemukan] ' : '') + roomObjects[key].label + ': ' + roomObjects[key].clue;
+
+        // Unlock button when 5/5 found
+        if (count === 5) {
+          const btn = document.getElementById('btn-to-misi2');
+          btn.disabled = false;
+          btn.className =
+            'w-full min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer flex items-center justify-center gap-2';
+          document.getElementById('btn-to-misi2-label').textContent = 'Lanjut ke Misi 2';
+        }
+      }
+
+      // =========================================================
+      // MISI 2: LABORATORIUM PENGUKURAN
+      // =========================================================
+      function checkMisi2(buttonEl, isCorrect) {
+        if (misi2Solved) return;
+
+        // Reset styles on all option buttons
+        document.querySelectorAll('.m2-option').forEach((btn) => {
+          btn.classList.remove('border-emerald-500', 'bg-emerald-50', 'border-rose-500', 'bg-rose-50');
+          btn.classList.add('border-slate-200');
+        });
+
+        const fb = document.getElementById('m2-feedback');
+        fb.classList.remove('hidden');
+
+        if (isCorrect) {
+          misi2Solved = true;
+          buttonEl.classList.remove('border-slate-200');
+          buttonEl.classList.add('border-emerald-500', 'bg-emerald-50');
+          fb.className = 'rounded-xl p-4 text-sm border border-emerald-200 bg-emerald-50 text-emerald-900 flex items-start gap-3';
+          fb.innerHTML = `
+            <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+              <div class="font-bold">Benar, ${escapeHtml(studentName)}!</div>
+              <p class="mt-0.5">Penggaris menunjukkan Foto A berukuran <strong>6 cm × 4 cm</strong> dan Foto B berukuran <strong>12 cm × 8 cm</strong>.</p>
+            </div>
+          `;
+
+          const nextBtn = document.getElementById('btn-to-misi3');
+          nextBtn.disabled = false;
+          nextBtn.className =
+            'w-full min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer flex items-center justify-center gap-2';
+          document.getElementById('btn-to-misi3-label').textContent = 'Lanjut ke Misi 3';
+        } else {
+          buttonEl.classList.remove('border-slate-200');
+          buttonEl.classList.add('border-rose-500', 'bg-rose-50');
+          fb.className = 'rounded-xl p-4 text-sm border border-rose-200 bg-rose-50 text-rose-900 flex items-start gap-3';
+          fb.innerHTML = `
+            <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="10" />
+              <path stroke-linecap="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            <div>
+              <div class="font-bold">Salah — Coba perhatikan garis putus-putus penggaris lagi!</div>
+              <p class="mt-0.5">Penggaris bawah mengukur <strong>Panjang</strong> (horizontal) dan penggaris kiri mengukur <strong>Lebar</strong> (vertikal).</p>
+            </div>
+          `;
+        }
+      }
+
+      // =========================================================
+      // MISI 3: MENGHITUNG PERBANDINGAN SISI
+      // =========================================================
+      function checkMisi3() {
+        const rawP = document.getElementById('ratio-panjang').value;
+        const rawL = document.getElementById('ratio-lebar').value;
+        const normP = rawP.replace(/\s+/g, '');
+        const normL = rawL.replace(/\s+/g, '');
+
+        const fb = document.getElementById('m3-feedback');
+        fb.classList.remove('hidden');
+
+        if (!normP || !normL) {
+          fb.className = 'rounded-xl p-4 text-sm border border-amber-200 bg-amber-50 text-amber-900 flex items-start gap-3';
+          fb.innerHTML = `
+            <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10" />
+              <path stroke-linecap="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            <div>Lengkapi kedua kolom perbandingan terlebih dahulu sebelum memeriksa.</div>
+          `;
+          return;
+        }
+
+        const isPCorrect = normP === '1:2';
+        const isLCorrect = normL === '1:2';
+
+        if (isPCorrect && isLCorrect) {
+          misi3Solved = true;
+          fb.className = 'rounded-xl p-4 text-sm border border-emerald-200 bg-emerald-50 text-emerald-900 flex items-start gap-3';
+          fb.innerHTML = `
+            <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+              <div class="font-bold">Tepat sekali, ${escapeHtml(studentName)}!</div>
+              <p class="mt-0.5">Panjang <span class="font-mono">6:12 = 1:2</span> dan Lebar <span class="font-mono">4:8 = 1:2</span>. Rasio kedua sisi yang bersesuaian ternyata <strong>sama besar</strong>!</p>
+            </div>
+          `;
+          const nextBtn = document.getElementById('btn-to-misi4');
+          nextBtn.disabled = false;
+          nextBtn.className =
+            'flex-1 min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer flex items-center justify-center gap-2';
+        } else {
+          let hint = 'Periksa kembali perhitunganmu. Bagi kedua angka dengan FPB-nya.';
+          if (normP === '6:12' || normL === '4:8' || normP === '2:4' || normL === '2:4') {
+            hint = 'Perbandingan tersebut belum paling sederhana! Bagi lagi hingga mendapat rasio terkecil (format 1:2).';
+          } else if (normP === '2:1' || normL === '2:1') {
+            hint = 'Hati-hati urutannya terbalik! Soal meminta perbandingan Foto A : Foto B (kecil : besar).';
+          }
+          fb.className = 'rounded-xl p-4 text-sm border border-rose-200 bg-rose-50 text-rose-900 flex items-start gap-3';
+          fb.innerHTML = `
+            <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10" />
+              <path stroke-linecap="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            <div>
+              <div class="font-bold">Masih kurang tepat</div>
+              <p class="mt-0.5">${hint}</p>
+            </div>
+          `;
+        }
+      }
+
+      // =========================================================
+      // MISI 4: PENGELOMPOKAN BANGUN (DRAG & DROP + TAP)
+      // =========================================================
+      function renderMisi4Cards() {
+        const bankEl = document.getElementById('m4-bank');
+        const listSebangun = document.getElementById('list-sebangun');
+        const listTidak = document.getElementById('list-tidak');
+
+        bankEl.innerHTML = '';
+        listSebangun.innerHTML = '';
+        listTidak.innerHTML = '';
+
+        misi4CardsData.forEach((card) => {
+          const zone = cardPlacements[card.id];
+          const isSelected = selectedCardId === card.id;
+
+          const cardEl = document.createElement('div');
+          cardEl.id = card.id;
+          cardEl.draggable = true;
+          cardEl.setAttribute('role', 'button');
+          cardEl.setAttribute('tabindex', '0');
+          cardEl.className =
+            'bg-white rounded-xl p-3 border transition-all cursor-grab active:cursor-grabbing select-none space-y-2 ' +
+            (isSelected
+              ? 'border-indigo-600 ring-2 ring-indigo-200 shadow-sm'
+              : 'border-slate-200 hover:border-indigo-400 shadow-sm');
+
+          cardEl.innerHTML = `
+            <div class="pointer-events-none">${card.svg}</div>
+            <div class="pointer-events-none">
+              <div class="font-display font-bold text-xs sm:text-sm text-slate-900">${card.title}</div>
+              <div class="font-mono text-[11px] text-slate-600 mt-0.5">${card.desc}</div>
+            </div>
+            ${
+              zone !== 'bank'
+                ? `<button type="button" onclick="event.stopPropagation(); moveCardTo('${card.id}', 'bank')" class="text-[11px] font-semibold text-slate-500 hover:text-rose-600 underline">Kembalikan</button>`
+                : ''
+            }
+          `;
+
+          // Drag events
+          cardEl.addEventListener('dragstart', (ev) => {
+            ev.dataTransfer.setData('text/plain', card.id);
+            selectedCardId = card.id;
+          });
+
+          // Click/Tap select event (prevent bubbling to dropzone)
+          cardEl.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            selectedCardId = selectedCardId === card.id ? null : card.id;
+            updateSelectedHint();
+            renderMisi4Cards();
+          });
+
+          cardEl.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+              ev.preventDefault();
+              ev.stopPropagation();
+              selectedCardId = selectedCardId === card.id ? null : card.id;
+              updateSelectedHint();
+              renderMisi4Cards();
+            }
+          });
+
+          if (zone === 'bank') bankEl.appendChild(cardEl);
+          else if (zone === 'sebangun') listSebangun.appendChild(cardEl);
+          else if (zone === 'tidak') listTidak.appendChild(cardEl);
+        });
+
+        updateSelectedHint();
+      }
+
+      function updateSelectedHint() {
+        const hintEl = document.getElementById('m4-selected-hint');
+        if (selectedCardId) {
+          const found = misi4CardsData.find((c) => c.id === selectedCardId);
+          hintEl.textContent = 'Kartu terpilih: ' + found.title + ' — klik kotak Sebangun / Tidak Sebangun';
+        } else {
+          hintEl.textContent = 'Seret kartu atau klik untuk memilih';
+        }
+      }
+
+      function allowDrop(ev, zoneDomId) {
+        ev.preventDefault();
+        if (zoneDomId) {
+          document.getElementById(zoneDomId).classList.add('drop-zone-active');
+        }
+      }
+
+      function leaveDrop(zoneDomId) {
+        document.getElementById(zoneDomId).classList.remove('drop-zone-active');
+      }
+
+      function dropCard(ev, targetZone) {
+        ev.preventDefault();
+        document.getElementById('zone-sebangun').classList.remove('drop-zone-active');
+        document.getElementById('zone-tidak').classList.remove('drop-zone-active');
+        const cardId = ev.dataTransfer.getData('text/plain');
+        if (cardId && cardPlacements.hasOwnProperty(cardId)) {
+          moveCardTo(cardId, targetZone);
+        }
+      }
+
+      function placeSelectedCard(targetZone) {
+        if (!selectedCardId) return;
+        moveCardTo(selectedCardId, targetZone);
+      }
+
+      function moveCardTo(cardId, targetZone) {
+        cardPlacements[cardId] = targetZone;
+        selectedCardId = null;
+        renderMisi4Cards();
+      }
+
+      function resetMisi4() {
+        Object.keys(cardPlacements).forEach((k) => (cardPlacements[k] = 'bank'));
+        selectedCardId = null;
+        document.getElementById('m4-feedback').classList.add('hidden');
+        renderMisi4Cards();
+      }
+
+      function checkMisi4() {
+        const unplaced = Object.values(cardPlacements).filter((z) => z === 'bank').length;
+        const fb = document.getElementById('m4-feedback');
+        fb.classList.remove('hidden');
+
+        if (unplaced > 0) {
+          fb.className = 'rounded-xl p-4 text-sm border border-amber-200 bg-amber-50 text-amber-900';
+          fb.innerHTML = `<strong>Belum lengkap!</strong> Masih ada ${unplaced} kartu di area atas. Kelompokkan seluruh 4 kartu terlebih dahulu.`;
+          return;
+        }
+
+        let correctCount = 0;
+        const detailLines = misi4CardsData.map((card) => {
+          const isRight = cardPlacements[card.id] === card.correctZone;
+          if (isRight) correctCount++;
+          const labelZone = card.correctZone === 'sebangun' ? 'Sebangun' : 'Tidak Sebangun';
+          return `<li class="flex items-start gap-2">
+            <span class="font-bold ${isRight ? 'text-emerald-700' : 'text-rose-700'} shrink-0">${isRight ? '✓ Benar' : '✕ Salah'}</span>
+            <span><strong>${card.title}:</strong> ${card.reason} (Kategori: ${labelZone})</span>
+          </li>`;
+        });
+
+        if (correctCount === 4) {
+          fb.className = 'rounded-xl p-4 text-sm border border-emerald-200 bg-emerald-50 text-emerald-900 space-y-2';
+          fb.innerHTML = `
+            <div class="font-bold">Luar biasa, ${escapeHtml(studentName)}! Semua 4 kartu dikelompokkan dengan tepat!</div>
+            <ul class="space-y-1 text-xs sm:text-sm">${detailLines.join('')}</ul>
+          `;
+          const btn = document.getElementById('btn-to-misi5');
+          btn.disabled = false;
+          btn.className =
+            'min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer flex items-center justify-center gap-2';
+        } else {
+          fb.className = 'rounded-xl p-4 text-sm border border-rose-200 bg-rose-50 text-rose-900 space-y-2';
+          fb.innerHTML = `
+            <div class="font-bold">Skor sementara: ${correctCount}/4 tepat. Perbaiki kartu yang masih keliru!</div>
+            <ul class="space-y-1 text-xs sm:text-sm">${detailLines.join('')}</ul>
+          `;
+        }
+      }
+
+      // =========================================================
+      // MISI 5: MATERI & KESIMPULAN INTERAKTIF
+      // =========================================================
+      function revealNextMisi5Card() {
+        if (misi5Step < 3) {
+          misi5Step++;
+          document.getElementById('m5-card-' + misi5Step).classList.remove('hidden');
+          document.getElementById('m5-step-indicator').textContent = `Kartu ${misi5Step} dari 3 terbuka`;
+        }
+
+        const nextCardBtn = document.getElementById('btn-m5-next-card');
+        if (misi5Step === 2) {
+          nextCardBtn.textContent = 'Selanjutnya: Contoh vs Bukan Contoh';
+        } else if (misi5Step === 3) {
+          nextCardBtn.classList.add('hidden');
+          const quizBtn = document.getElementById('btn-to-quiz');
+          quizBtn.disabled = false;
+          quizBtn.className =
+            'w-full sm:w-auto min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer';
+        }
+      }
+
+      // =========================================================
+      // EVALUASI AKHIR: KUIS PILIHAN GANDA (5 SOAL)
+      // =========================================================
+      function renderQuizQuestion() {
+        quizAnswered = false;
+        const q = quizQuestions[currentQuizIdx];
+
+        document.getElementById('quiz-progress-label').textContent = `Soal ${currentQuizIdx + 1} dari ${quizQuestions.length}`;
+        document.getElementById('quiz-live-score').textContent = String(quizScore);
+        document.getElementById('quiz-question-text').textContent = `${currentQuizIdx + 1}. ${q.question}`;
+
+        const diagSlot = document.getElementById('quiz-diagram-slot');
+        if (q.diagram) {
+          diagSlot.innerHTML = q.diagram;
+          diagSlot.classList.remove('hidden');
+        } else {
+          diagSlot.innerHTML = '';
+          diagSlot.classList.add('hidden');
+        }
+
+        const optContainer = document.getElementById('quiz-options-container');
+        optContainer.innerHTML = '';
+        const letters = ['A', 'B', 'C', 'D'];
+
+        q.options.forEach((optText, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className =
+            'quiz-opt-btn w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-colors flex items-center gap-3 text-sm sm:text-base text-slate-800';
+          btn.innerHTML = `
+            <span class="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0 text-slate-700">${letters[idx]}</span>
+            <span class="flex-1">${optText}</span>
+          `;
+          btn.onclick = () => handleQuizAnswer(idx);
+          optContainer.appendChild(btn);
+        });
+
+        document.getElementById('quiz-explanation-box').classList.add('hidden');
+        const nextBtn = document.getElementById('btn-quiz-next');
+        nextBtn.disabled = true;
+        nextBtn.className =
+          'min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed';
+        nextBtn.textContent = currentQuizIdx === quizQuestions.length - 1 ? 'Lanjut ke Refleksi' : 'Soal Berikutnya';
+      }
+
+      function handleQuizAnswer(chosenIdx) {
+        if (quizAnswered) return;
+        quizAnswered = true;
+
+        const q = quizQuestions[currentQuizIdx];
+        const isCorrect = chosenIdx === q.correctIndex;
+        if (isCorrect) {
+          quizScore += 20;
+        }
+        document.getElementById('quiz-live-score').textContent = String(quizScore);
+
+        const buttons = document.querySelectorAll('.quiz-opt-btn');
+        buttons.forEach((btn, idx) => {
+          btn.disabled = true;
+          btn.classList.remove('hover:border-indigo-400', 'hover:bg-indigo-50/40');
+          if (idx === q.correctIndex) {
+            btn.classList.remove('border-slate-200');
+            btn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-950', 'font-semibold');
+          } else if (idx === chosenIdx && !isCorrect) {
+            btn.classList.remove('border-slate-200');
+            btn.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-950');
+          }
+        });
+
+        const expBox = document.getElementById('quiz-explanation-box');
+        const expTitle = document.getElementById('quiz-explanation-title');
+        const expText = document.getElementById('quiz-explanation-text');
+        expBox.classList.remove('hidden');
+
+        if (isCorrect) {
+          expBox.className = 'rounded-xl p-4 border border-emerald-200 bg-emerald-50 space-y-1.5 text-sm';
+          expTitle.className = 'font-bold text-emerald-800 flex items-center gap-2';
+          expTitle.textContent = '✓ Jawaban Benar! (+20 Poin)';
+        } else {
+          expBox.className = 'rounded-xl p-4 border border-rose-200 bg-rose-50 space-y-1.5 text-sm';
+          expTitle.className = 'font-bold text-rose-800 flex items-center gap-2';
+          expTitle.textContent = '✕ Jawaban Kurang Tepat (Pembahasan)';
+        }
+        expText.textContent = q.explanation;
+
+        const nextBtn = document.getElementById('btn-quiz-next');
+        nextBtn.disabled = false;
+        nextBtn.className =
+          'min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer';
+      }
+
+      function nextQuizQuestion() {
+        if (currentQuizIdx < quizQuestions.length - 1) {
+          currentQuizIdx++;
+          renderQuizQuestion();
+        } else {
+          goToStage('reflection');
+        }
+      }
+
+      // =========================================================
+      // REFLEKSI & SERTIFIKAT KELULUSAN
+      // =========================================================
+      function selectReflectionLevel(btn) {
+        selectedReflectionLevel = btn.getAttribute('data-level');
+        document.getElementById('reflection-scale-error').classList.add('hidden');
+        document.querySelectorAll('.refl-btn').forEach((el) => {
+          el.classList.remove('border-indigo-600', 'bg-indigo-50', 'ring-2', 'ring-indigo-100');
+          el.classList.add('border-slate-200');
+        });
+        btn.classList.remove('border-slate-200');
+        btn.classList.add('border-indigo-600', 'bg-indigo-50', 'ring-2', 'ring-indigo-100');
+      }
+
+      document.getElementById('reflection-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!selectedReflectionLevel) {
+          document.getElementById('reflection-scale-error').classList.remove('hidden');
+          return;
+        }
+
+        const note = document.getElementById('reflection-message').value.trim();
+
+        // Populate Certificate
+        document.getElementById('cert-student-name').textContent = studentName;
+        document.getElementById('cert-score').textContent = `${quizScore} / 100`;
+        document.getElementById('cert-reflection-level').textContent = selectedReflectionLevel;
+
+        let predicate = 'Penjelajah Pemula';
+        if (quizScore === 100) predicate = 'Grand Master Geometri';
+        else if (quizScore >= 80) predicate = 'Penjelajah Kesebangunan Unggul';
+        else if (quizScore >= 60) predicate = 'Petualang Geometri Terampil';
+        document.getElementById('cert-predicate').textContent = predicate;
+
+        const noteWrap = document.getElementById('cert-note-wrapper');
+        if (note) {
+          document.getElementById('cert-reflection-note').textContent = `"${note}"`;
+          noteWrap.classList.remove('hidden');
+        } else {
+          noteWrap.classList.add('hidden');
+        }
+
+        goToStage('certificate');
+      });
+
+      // =========================================================
+      // RESET / ULANGI PETUALANGAN
+      // =========================================================
+      function restartQuest() {
+        // Reset Misi 1
+        foundObjects = new Set();
+        document.getElementById('m1-counter').textContent = '0/5';
+        document.querySelectorAll('.room-object').forEach((el) => {
+          el.classList.remove('is-found');
+          const r = el.querySelector('.found-ring');
+          const b = el.querySelector('.found-badge');
+          if (r) r.classList.add('hidden');
+          if (b) b.classList.add('hidden');
+        });
+        document.querySelectorAll('#m1-checklist .m1-status').forEach((st) => {
+          st.className = 'm1-status text-xs font-medium text-slate-400';
+          st.textContent = 'Belum ditemukan';
+        });
+        const btnM2 = document.getElementById('btn-to-misi2');
+        btnM2.disabled = true;
+        btnM2.className =
+          'w-full min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2';
+        document.getElementById('btn-to-misi2-label').textContent = 'Temukan 5 Benda Dahulu';
+        document.getElementById('m1-feedback').className =
+          'rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-700 flex items-center gap-3';
+        document.getElementById('m1-feedback-text').innerHTML =
+          'Ayo perhatikan sekeliling kelas, <span class="js-student-name">' + escapeHtml(studentName) + '</span>! Klik 5 benda berbentuk segi empat.';
+
+        // Reset Misi 2
+        misi2Solved = false;
+        document.querySelectorAll('.m2-option').forEach((btn) => {
+          btn.classList.remove('border-emerald-500', 'bg-emerald-50', 'border-rose-500', 'bg-rose-50');
+          btn.classList.add('border-slate-200');
+        });
+        document.getElementById('m2-feedback').classList.add('hidden');
+        const btnM3 = document.getElementById('btn-to-misi3');
+        btnM3.disabled = true;
+        btnM3.className =
+          'w-full min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2';
+        document.getElementById('btn-to-misi3-label').textContent = 'Pilih Jawaban yang Benar Dahulu';
+
+        // Reset Misi 3
+        misi3Solved = false;
+        document.getElementById('ratio-panjang').value = '';
+        document.getElementById('ratio-lebar').value = '';
+        document.getElementById('m3-feedback').classList.add('hidden');
+        const btnM4 = document.getElementById('btn-to-misi4');
+        btnM4.disabled = true;
+        btnM4.className =
+          'flex-1 min-h-[46px] px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2';
+
+        // Reset Misi 4
+        resetMisi4();
+        const btnM5 = document.getElementById('btn-to-misi5');
+        btnM5.disabled = true;
+        btnM5.className =
+          'min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2';
+
+        // Reset Misi 5
+        misi5Step = 1;
+        document.getElementById('m5-card-2').classList.add('hidden');
+        document.getElementById('m5-card-3').classList.add('hidden');
+        document.getElementById('m5-step-indicator').textContent = 'Kartu 1 dari 3 terbuka';
+        const nextCardBtn = document.getElementById('btn-m5-next-card');
+        nextCardBtn.classList.remove('hidden');
+        nextCardBtn.textContent = 'Selanjutnya: Buka Syarat Kesebangunan';
+        const quizBtn = document.getElementById('btn-to-quiz');
+        quizBtn.disabled = true;
+        quizBtn.className =
+          'w-full sm:w-auto min-h-[46px] px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-colors bg-slate-200 text-slate-500 cursor-not-allowed';
+
+        // Reset Quiz
+        currentQuizIdx = 0;
+        quizScore = 0;
+        quizAnswered = false;
+
+        // Reset Reflection
+        selectedReflectionLevel = '';
+        document.getElementById('reflection-message').value = '';
+        document.querySelectorAll('.refl-btn').forEach((el) => {
+          el.classList.remove('border-indigo-600', 'bg-indigo-50', 'ring-2', 'ring-indigo-100');
+          el.classList.add('border-slate-200');
+        });
+
+        goToStage('welcome');
+      }
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    </script>
+  </body>
+</html>
